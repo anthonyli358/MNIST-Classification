@@ -30,12 +30,12 @@ def normalise_data(x):
     return x / np.max(x)
 
 
-def reshape_channel(x):
-    return x.reshape(x.shape[0], x.shape[1], x.shape[2], 1)  # 1 for greyscale, 3 for rgb
-
-
-def reshape(x):
-    return x.reshape(x.shape[0], -1)
+def reshape(x, model='cnn'):
+    if model == 'mlp':
+        return x.reshape(x.shape[0], -1)
+    else:
+        # model == 'cnn'
+        return x.reshape(x.shape[0], x.shape[1], x.shape[2], 1)  # 1 for greyscale, 3 for rgb
 
 
 def one_hot(y):
@@ -43,36 +43,44 @@ def one_hot(y):
 
 
 def model_performance(model, x_train, x_test, y_test):
-    y_pred = model.predict(x_test)
+    predictions = model.predict(x_test)  # same as predict_proba in softmax output
+    y_pred = np.argmax(np.round(predictions), axis=1)
+    y_test_og = np.argmax(y_test, axis=1)
 
-    accuracy = accuracy_score(y_test, y_pred)
-    tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-    # Could use sklearn.metrics.classification_report here, support is no. occurances
-    # Precision (sensitivity) & Recall (specificity)
-    p = tp / (tp + fp)
-    r = tp / (tp + fn)
-    # TPR & TNR
-    tpr = tp / (tp + fn)
-    tnr = tn / (tn + fp)
+    accuracy = accuracy_score(y_test_og, y_pred)
+    balanced_accuracy = balanced_accuracy_score(y_test_og, y_pred)
+    # auc = roc_auc_score(y_test_og, predictions)  # need 1-vs-all approach for auc-roc curve
+    loss = log_loss(y_test_og, predictions)
+    report = classification_report(y_test_og, y_pred)
+    matrix = confusion_matrix(y_test_og, y_pred)
+    # For multiclass problems typically roc, precision, recall become less meaningful and accuracy more so, but can try:
+    # - macro-average ROC curves (average per class in a 1-vs-all fashion)
+    # - micro-averaged ROC curves (consider all positives and negatives together as single class)
+    tp = sum(np.diagonal(matrix))
+    fp = np.sum(matrix, axis=0) - tp
+    tn = 0  # must be computed per class
+    fn = np.sum(matrix, axis=1) - tp
 
-    print(f"n={x_train.shape[1]}, accuracy={accuracy * 100.0:.2f}%, balanced_accuracy={((tpr + tnr) / 2) * 100.0:.2f}%")
-    print(f"precision={p:.3f}, recall={r:.3f}")
-    print(f"F1 Score={2 * (p * r) / (p + r):.3f}, G-Mean={np.sqrt(p * r):.3f}")
+    print(f'training cases={x_train.shape[0]}, test cases={y_test.shape[0]}, possible outcomes={y_test.shape[1]}')
+    print(f'accuracy={accuracy:.2f}%, balanced_accuracy={balanced_accuracy:.2f}%, loss={loss:.3f}')
+    # print(f'auc={auc:.3f}')
+    print(report)
 
-    y_pred_proba = model.predict_proba(x_test)
-    # [:, 0] prob of '0', [:, 1] prob of '1'
+    # Would need to compute all labels separately in 1-vs-all for scikitplot curves (with micro/macro average) to work
+    # y_pred_proba = model.predict_proba(x_test)
+    # # [:, 0] prob of '0', [:, 1] prob of '1'
+    # skplt.metrics.plot_roc(y_test, y_pred_proba)
+    # skplt.metrics.plot_precision_recall(y_test, y_pred_proba)
+    # skplt.metrics.plot_ks_statistic(y_test, y_pred_proba)
+    # skplt.metrics.plot_cumulative_gain(y_test, y_pred_proba)
+    # skplt.metrics.plot_lift_curve(y_test, y_pred_proba)
 
-    # fpr, tpr, thresh = roc_curve(y_test, y_pred_proba[:, 1])
-    # print(f"auc={auc(fpr, tpr):.3f}")
-    # precision, recall, thresholds = precision_recall_curve(y_test, y_pred_proba[:, 1])
-    # print(f"pr_auc={auc(recall, precision):.3f}")
-
-    skplt.metrics.plot_roc(y_test, y_pred_proba)
-    skplt.metrics.plot_precision_recall(y_test, y_pred_proba)
-    skplt.metrics.plot_ks_statistic(y_test, y_pred_proba)
-    skplt.metrics.plot_cumulative_gain(y_test, y_pred_proba)
-    skplt.metrics.plot_lift_curve(y_test, y_pred_proba)
-    # TODO: Scikit metrics
+    # Done via confusion matrix: precision (sensitivity), recall (specificity), tpr, tnr, balanced_accuracy:
+    # p = tp / (tp + fp)
+    # r = tp / (tp + fn)
+    # tpr = tp / (tp + fn)
+    # tnr = tn / (tn + fp)
+    # bal_acc = (tpr + tnr) / 2
 
 
 def plot_model_history(metric):
@@ -134,19 +142,21 @@ def cnn(x, y):
 
 
 if __name__ == '__main__':
+    # DEFINE MODEL TO USE: mlp or cnn
+    ml_model = mlp
     # Load data
     (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
     # Normalise and shape data
     x_train, x_test = normalise_data(x_train), normalise_data(x_test)
-    x_train, x_test = reshape(x_train), reshape(x_test)  # for mlp
-    # x_train, x_test = reshape_channel(x_train), reshape_channel(x_test)  # for cnn
+    x_train, x_test = reshape(x_train, ml_model.__name__), reshape(x_test, ml_model.__name__)
     y_train, y_test = one_hot(y_train), one_hot(y_test)
     # Model
-    model = mlp(x_train, y_train)
-    history = model.fit(x_train, y_train, validation_data=(x_test, y_test), batch_size=64, epochs=1)
+    model = ml_model(x_train, y_train)
+    history = model.fit(x_train, y_train, validation_data=(x_test, y_test), batch_size=64, epochs=10)
     # Validate
     plot_model(model, to_file='models/model.png', show_shapes=True)
     test_loss, test_accuracy = model.evaluate(x_test, y_test, batch_size=64, verbose=1)
-    print(f'Test loss: {test_loss}, Test accuracy: {test_accuracy}')
+    print(f'test loss={test_loss}, test accuracy={test_accuracy}')
     plot_model_history('accuracy')
     plot_model_history('loss')
+    model_performance(model, x_train, x_test, y_test)
