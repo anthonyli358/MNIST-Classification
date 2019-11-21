@@ -53,7 +53,7 @@ def model_performance(model, x_train, x_test, y_test):
     loss = log_loss(y_test_og, predictions)
     report = classification_report(y_test_og, y_pred)
     matrix = confusion_matrix(y_test_og, y_pred)
-    # For multiclass problems typically roc, precision, recall become less meaningful and accuracy more so, but can try:
+    # For multi-class problems roc, precision, recall become less meaningful and accuracy more so, but can try:
     # - macro-average ROC curves (average per class in a 1-vs-all fashion)
     # - micro-averaged ROC curves (consider all positives and negatives together as single class)
     tp = sum(np.diagonal(matrix))
@@ -97,18 +97,19 @@ def plot_model_history(metric):
 def mlp(x, y):
     """Multilayer Perceptron"""
     # Initialise MLP
+    # Input layer with nodes=number of features in the dataset
     model = Sequential()
-    # Input layer
+    # Hidden layer, one hidden layer is sufficient for the large majority of problems
     model.add(Dense(512, activation='relu', input_shape=(x.shape[1],)))
     model.add(Dropout(0.2))  # apply dropout to input, randomly setting a fraction rate of input units to 0 at each
     # update during training time, which helps prevent overfitting
-    # Hidden layer
+    # Hidden layer, size between input and output layers
     model.add(Dense(512, activation='relu'))
     model.add(Dropout(0.2))
-    # Output layer
+    # Output layer, one node unless 'softmax' in multi-class problems
     model.add(Dense(y.shape[1], activation='softmax'))
     # Compile
-    model.compile(loss=keras.losses.categorical_crossentropy,
+    model.compile(loss=keras.losses.categorical_crossentropy,  # 'sparse_categorical_crossentropy' doesn't require oh
                   optimizer=keras.optimizers.RMSprop(),
                   metrics=['accuracy'])  # more metric history available https://keras.io/metrics/
     return model
@@ -117,8 +118,9 @@ def mlp(x, y):
 def cnn(x, y):
     """Convolutional Neural Network"""
     # Initialise CNN
-    model = Sequential()
     # Input layer
+    model = Sequential()
+    # Hidden layer
     model.add(Conv2D(64, (3, 3), input_shape=(x.shape[1], x.shape[2], 1)))  # 64 filters (output space), 3x3 convolution
     # BatchNormalization() aids with overfitting, according to authors and Andrew Ng it should be applied immediately
     # before activation function (non-linearity)
@@ -154,8 +156,9 @@ if __name__ == '__main__':
     y_train, y_test = one_hot(y_train), one_hot(y_test)
     # Model
     model = ml_model(x_train, y_train)
-    history = model.fit(x_train, y_train, validation_data=(x_test, y_test), batch_size=64, epochs=10)
+    history = model.fit(x_train, y_train, validation_data=(x_test, y_test), batch_size=64, epochs=1)
     # Validate
+    model.summary()
     plot_model(model, to_file='models/model.png', show_shapes=True)
     test_loss, test_accuracy = model.evaluate(x_test, y_test, batch_size=64, verbose=1)
     print(f'test loss={test_loss}, test accuracy={test_accuracy}')
