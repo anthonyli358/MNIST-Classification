@@ -156,7 +156,7 @@ if __name__ == '__main__':
     y_train, y_test = one_hot(y_train), one_hot(y_test)
     # Model
     model = ml_model(x_train, y_train)
-    history = model.fit(x_train, y_train, validation_data=(x_test, y_test), batch_size=64, epochs=1)
+    history = model.fit(x_train, y_train, validation_data=(x_test, y_test), batch_size=64, epochs=10)
     # Validate
     model.summary()
     plot_model(model, to_file='models/model.png', show_shapes=True)
