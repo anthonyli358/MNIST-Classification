@@ -110,7 +110,7 @@ def mlp(x, y):
     # Compile
     model.compile(loss=keras.losses.categorical_crossentropy,
                   optimizer=keras.optimizers.RMSprop(),
-                  metrics=['accuracy'])
+                  metrics=['accuracy'])  # more metric history available https://keras.io/metrics/
     return model
 
 
@@ -137,7 +137,9 @@ def cnn(x, y):
     # model.add(BatchNormalization())
     model.add(Activation('softmax'))  # softmax activation function as output, turns into weights that sum to 1
     # Compile
-    model.compile(loss=keras.losses.categorical_crossentropy, optimizer=keras.optimizers.Adam(), metrics=['accuracy'])
+    model.compile(loss=keras.losses.categorical_crossentropy,
+                  optimizer=keras.optimizers.Adam(),
+                  metrics=['accuracy'])
     return model
 
 
@@ -157,6 +159,6 @@ if __name__ == '__main__':
     plot_model(model, to_file='models/model.png', show_shapes=True)
     test_loss, test_accuracy = model.evaluate(x_test, y_test, batch_size=64, verbose=1)
     print(f'test loss={test_loss}, test accuracy={test_accuracy}')
-    plot_model_history('accuracy')
     plot_model_history('loss')
+    plot_model_history('accuracy')
     model_performance(model, x_train, x_test, y_test)
