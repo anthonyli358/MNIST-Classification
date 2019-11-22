@@ -12,7 +12,7 @@ To minimise this the dropout should be increased or regularization layers introd
 </p>
 
 ### CNN (Convolutional Neural Network)
-The CNN outperforms the MLP without overfitting. The BatchNormalization layers are therefore not included.
+The CNN outperforms the MLP without overfitting. BatchNormalization layers are therefore not included.
 <p float="left">
     <img src="results/model_evaluation/cnn_loss.png" alt="cnn_loss" width="400"/> 
     <img src="results/model_evaluation/cnn_accuracy.png" alt="cnn_accuracy" width="400"/> 
