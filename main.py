@@ -159,7 +159,7 @@ if __name__ == '__main__':
     history = model.fit(x_train, y_train, validation_data=(x_test, y_test), batch_size=64, epochs=10)
     # Validate
     model.summary()
-    plot_model(model, to_file='models/model.png', show_shapes=True)
+    plot_model(model, to_file='results/model_architectures/model.png', show_shapes=True)
     test_loss, test_accuracy = model.evaluate(x_test, y_test, batch_size=64, verbose=1)
     print(f'test loss={test_loss}, test accuracy={test_accuracy}')
     plot_model_history('loss')
