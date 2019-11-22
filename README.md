@@ -7,15 +7,15 @@ Overfitting is a common issue in deep learning models and despite using Dropout 
 To minimise this the dropout should be increased or regularization layers introduced.
 
 <p float="left">
-    <img src="results/model_evaluation/mlp_loss.png" alt="mlp_loss" width="375"/> 
-    <img src="results/model_evaluation/mlp_accuracy.png" alt="mlp_accuracy" width="375"/> 
+    <img src="results/model_evaluation/mlp_loss.png" alt="mlp_loss" width="400"/> 
+    <img src="results/model_evaluation/mlp_accuracy.png" alt="mlp_accuracy" width="400"/> 
 </p>
 
 ### CNN (Convolutional Neural Network)
 The CNN outperforms the MLP without overfitting. The BatchNormalization layers are therefore not included.
 <p float="left">
-    <img src="results/model_evaluation/mlp_loss.png" alt="mlp_loss" width="375"/> 
-    <img src="results/model_evaluation/mlp_accuracy.png" alt="mlp_accuracy" width="375"/> 
+    <img src="results/model_evaluation/cnn_loss.png" alt="cnn_loss" width="400"/> 
+    <img src="results/model_evaluation/cnn_accuracy.png" alt="cnn_accuracy" width="400"/> 
 </p>
 
 ## Getting Started
@@ -23,5 +23,5 @@ The CNN outperforms the MLP without overfitting. The BatchNormalization layers a
 
 ## Development
 - Image classification using MLP and CNN neural networks in Keras
-- Model architectures plots available in the 'results/models' folder
+- Model architectures plots available in the 'results/model_architectures' folder
 - Evaluation metrics discussed for multi-class problems
