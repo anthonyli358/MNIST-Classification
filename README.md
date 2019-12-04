@@ -19,9 +19,9 @@ The CNN outperforms the MLP without overfitting. BatchNormalization layers are t
 </p>
 
 ## Getting Started
-- Change the ml_model variable at the bottom of [main.py](main.py) to mlp or cnn and run
+- Change the *ml_model* variable under ```if __name__ == '__main__'``` in [main.py](main.py) to *mlp* or *cnn* and run
 
 ## Development
 - Image classification using MLP and CNN neural networks in Keras
-- Model architecture plots available in the 'results/model_architectures' folder
+- Model architecture plots available in the [results/model_architectures](results/model_architectures) folder
 - Evaluation metrics discussed for multi-class problems
